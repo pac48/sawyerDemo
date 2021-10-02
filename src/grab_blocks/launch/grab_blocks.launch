@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+
+<node pkg="intera_interface" type="enable_robot.py" name="enable_robot_node" args="-e"/>
+
+ <node pkg="intera_interface" type="joint_trajectory_action_server.py" name="joint_trajectory_action_server_node"/>
+
+
+<include file="$(find sawyer_moveit_config)/launch/sawyer_moveit.launch">
+  <!-- all vars that included.launch requires must be set -->
+  <arg name="electric_gripper" value="true" />
+</include>
+
+<node pkg="intera_examples" type="gripper_listener.py" name="gripper_listener" />
+
+<!-- <node pkg="grab_blocks" type="grab_blocks.py" name="grab_blocks_node" />  -->
+
+</launch>

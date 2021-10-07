@@ -15,9 +15,15 @@ using namespace std;
 class ROSProvider
 {
 public:
-    static auto initialize(ros::NodeHandle& nIn){
+    static inline uint32_t queue_size_pub;
+    static inline uint32_t queue_size_sub;
+
+    static void init(ros::NodeHandle* nIn){
         n = nIn;
+        queue_size_pub = 1;
+        queue_size_sub = 1;
     }
+
     template <typename T>
     static auto getSubscriberCallBack(void (*userCallback)(T))
     {
@@ -26,42 +32,47 @@ public:
     }
 
     template <typename T>
-    static tuple<ros::Publisher, T> getPublisher(const string &topic, uint32_t queue_size)
+    static tuple<ros::Publisher, T> getPublisher(const string &topic, const string& channel="")
     {
         if (!publisherPairs)
         {
             publisherPairs = new vector<PublisherPair *>();
-            atexit(ROSProvider::cleanUp);
         }
         if (!topic2Pub<T>)
         {
-            topic2Pub<T> = new map<string, tuple<ros::Publisher, T> *>();
-            atexit(ROSProvider::cleanTopic2Pub<T>);
+            topic2Pub<T> = new map<string, tuple<ros::Publisher, T *> *>();
+            atexit(ROSProvider::cleanPub<T>);
         }
-        if (!topic2Pub<T>->operator[](topic))
+        string key = channel+topic;
+        if (!topic2Pub<T>->operator[](key))
         {
-            ros::Publisher pub = n.advertise<T>(topic, queue_size);
+            ros::Publisher pub = n->advertise<T>(topic, queue_size_pub);
             auto msg = new T();
-            publisherPairs->push_back(new PublisherPair{pub, (void *)msg});
-            auto tmp = new tuple<ros::Publisher, T> {pub, *msg};
-            topic2Pub<T>->operator[](topic) = tmp;
+            publisherPairs->push_back(new PublisherPair{pub, (void *)msg, ROSProvider::publishOne<T>});
+            auto tmp = new tuple<ros::Publisher , T *>{pub, msg};
+            topic2Pub<T>->operator[](key) = tmp;
         }
-        return *topic2Pub<T>->operator[](topic); //{pub, *msg};
+        auto [pub, msg_ptr] = *topic2Pub<T>->operator[](key);
+        tuple<ros::Publisher, T> tmp = make_tuple(pub, *msg_ptr);
+        return tmp; //tuple<ros::Publisher, T *>{pub, msg_ptr}; //*topic2Pub<T>->operator[](topic);
     }
 
     template <typename T>
-    static ros::Subscriber getSubscriber(const string &topic, uint32_t queue_size,
-                                         void (*userCallback)(T))
+    static ros::Subscriber getSubscriber(const string &topic,
+                                         void (*userCallback)(T), const string& channel="")
     {
         if (!topic2Sub)
-            topic2Sub = new map<string, ros::Subscriber *>();
-        if (!topic2Sub->operator[](topic))
+        {
+            topic2Sub = new map<string, ros::Subscriber >();
+            atexit(ROSProvider::cleanSub);
+        }
+        string key = channel+topic; // userCallback is required to be static, so the function pointer can be used as an identifier
+        if (!topic2Sub->operator[](key))
         {
             auto callback = getSubscriberCallBack(userCallback);
-            ros::Subscriber sub = n.subscribe(topic, queue_size, callback);
-            topic2Sub->operator[](topic) = &sub;
+            topic2Sub->operator[](key) = n->subscribe(topic, queue_size_sub, callback);
         }
-        return *(topic2Sub->operator[](topic));
+        return (topic2Sub->operator[](key));
     }
 
     template <typename T1, typename T2>
@@ -74,15 +85,23 @@ public:
     template <typename T1, typename T2>
     static ros::ServiceServer getService(const string &topic, bool (*userCallback)(T1, T2))
     {
-        auto callback = getServiceCallBack(userCallback);
-        ros::ServiceServer service = n.advertiseService(topic, callback);
-        return service;
+        if (!topic2Serv)
+        {
+            topic2Serv = new map<string, ros::ServiceServer>();
+            atexit(ROSProvider::cleanServ);
+        }
+        if (!topic2Serv->operator[](topic))
+        {
+            auto callback = getServiceCallBack(userCallback);
+            topic2Serv->operator[](topic) = n->advertiseService(topic, callback);
+        }
+        return (topic2Serv->operator[](topic));
     }
 
     static void publishAll()
     {
         for (auto pp : *publisherPairs)
-            ROSProvider::publishOne<std_msgs::Float32>(pp->msg, pp->publisher);
+            pp->publish(pp->msg, pp->publisher);
     }
 
     template <typename T>
@@ -92,32 +111,66 @@ public:
         pub.publish(*msg2);
     }
 
-    static void cleanUp()
+    static void cleanSub()
     {
-        for (auto pp : *publisherPairs)
-            delete pp;
-        delete publisherPairs;
-        delete topic2Sub;
-        // delete  topic2Pub;
+        if (topic2Sub)
+        {
+            delete topic2Sub;
+            topic2Sub = nullptr;
+            cout << "cleaned subscribers" << endl;
+        }
+    }
+
+    static void cleanServ()
+    {
+        if (topic2Serv)
+        {
+            delete topic2Serv;
+            topic2Serv = nullptr;
+            cout << "cleaned subscribers" << endl;
+        }
     }
 
     template <typename T>
-    static void cleanTopic2Pub(){
-        for (auto it = topic2Pub<T>->begin(); it != topic2Pub<T>->end(); it++)
-                delete it->second;
-        delete topic2Pub<T>;
+    static void cleanPub()
+    {
+        if (publisherPairs)
+        {
+            for (auto pp : *publisherPairs)
+                delete pp;
+            delete publisherPairs;
+            publisherPairs = nullptr;
+            cout << "cleaned "
+                 << "publisherPairs" << endl;
+        }
+        if (topic2Pub<T>)
+        {
+            for (auto it = topic2Pub<T>->begin(); it != topic2Pub<T>->end(); it++)
+            {
+                auto [pub_ptr, msg_ptr] = *it->second;
+                delete msg_ptr;
+                delete it->second; //tuple
+            }
+
+            delete topic2Pub<T>;
+            topic2Pub<T> = nullptr;
+            cout << "cleaned publishers " << typeid(T).name() << endl;
+        }
     }
 
-private:
+    //private:
     struct PublisherPair
     {
         ros::Publisher publisher;
         void *msg;
+        void (*publish)(void *, ros::Publisher);
     };
-    static inline ros::NodeHandle n;
+    static inline ros::NodeHandle* n;
     static inline vector<PublisherPair *> *publisherPairs;
-    static inline map<string, ros::Subscriber *> *topic2Sub;
+    static inline map<string, ros::ServiceServer > *topic2Serv;
+    static inline map<string, ros::Subscriber > *topic2Sub;
     template <typename T>
-    static inline map<string, tuple<ros::Publisher, T> *> *topic2Pub;
+    static inline map<string, tuple<ros::Publisher, T *> *> *topic2Pub;
+
 };
 #endif

@@ -11,9 +11,13 @@ class Sawyer : public Robot
 {
     
 public:
-    std::vector<std::string> jointNames = {
-            "head_pan"
-            "right_j0"
+    std::vector<int> joint2RL = {1, 8, 9, 0, 2, 3, 4, 5, 6, 7}; // maps joint sensor to robot library
+    std::vector<int> RL2Joint = {3, 0, 4, 5, 6, 7, 8, 9, 2, 1};
+            std::vector<std::string> jointNames = {
+            "head_pan",
+            "right_gripper_l_finger_joint",
+            "right_gripper_r_finger_joint",
+            "right_j0",
             "right_j1",
             "right_j2",
             "right_j3",
@@ -41,7 +45,7 @@ public:
         auto q = robot->dynamics->getPosition();
         for (int i = 0; i < msg->position.size(); i++)
         {
-            q[i] = msg->position[i];
+            q[robot->joint2RL[i]] = msg->position[i];
         }
         robot->dynamics->setPosition(q);
         robot->dynamics->forwardPosition();
@@ -54,45 +58,45 @@ public:
         auto q = robot->dynamics->getPosition();
         for (int i = 0; i < msg->position.size(); i++)
         {
-            q[i] = msg->position[i];
+            q[robot->joint2RL[i]] = msg->position[i];
         }
         auto tmp = robot->dynamics->getPosition();
 
         robot->dynamics->setPosition(q);
         robot->dynamics->forwardPosition();
-        operationalPosPubMsg.data = robot->getOperationalPosition(9// still need to check 2 and 1
-
-                );
+        operationalPosPubMsg.data = robot->getOperationalPosition(9); // still need to check 2 and 1;
         operationalPosPub.publish(operationalPosPubMsg);
 
     }
 
+
     static void rvizUpdateJoints(const sensor_msgs::JointState::ConstPtr &msg)
     { //maybe broken
-        Sawyer* robot = RobotFactory::getRobot<Sawyer>();
-        std::vector<double> tmp;
-        for (int i = 0; i < msg->position.size(); i++)
-        {
-            double val = msg->position[i];
-            tmp.push_back(val);
-        }
-        //rvizMsgs->position = tmp;
-  // rvizMsgs->name = robot->jointNames;
-     //   rvizMsgs->header.stamp = ros::Time::now();
+        auto [jointRvizPub, jointRvizMsg] = ROSProvider::getPublisher<sensor_msgs::JointState>("/joint_states");
+        msg->header.stamp.setNow(ros::Time::now());
+        jointRvizPub.publish(msg);
     }
 
     static void sendOpJointVelocities(const std_msgs::Float32MultiArray::ConstPtr &opVelMsg)
     { // send velocity commands given operational velocity command
-        auto [jointVelPub, jointVelMsg] = ROSProvider::getPublisher<std_msgs::Float32MultiArray>("joint_velocity_command");
+        auto [jointVelPub, jointVelMsg] = ROSProvider::getPublisher<intera_core_msgs::JointCommand>("/robot/limb/right/joint_command");
         Sawyer* robot = RobotFactory::getRobot<Sawyer>();
         std::vector<float> opvel;
         for (int i = 0; i < 6; i++)
         {
             opvel.push_back(opVelMsg->data[i]);
         }
-        robot->dynamics->setOperationalVelocity(9, robot->floatVec2MathVec(opvel));
-        robot->dynamics->forwardVelocity();
-        jointVelMsg.data = robot->mathVec2FloatVec(robot->dynamics->getVelocity());
+        //robot->dynamics->inverseDynamics();
+        auto qd = robot->xd2jd(9, robot->floatVec2MathVec(opvel));
+        for (int i = 0; i < robot->RL2Joint.size(); i++)
+        {
+            if (robot->RL2Joint[i] < 3)
+                continue;
+            jointVelMsg.velocity.push_back(qd[robot->RL2Joint[i]]);
+            jointVelMsg.names.push_back(robot->jointNames[robot->RL2Joint[i]]);
+        }
+        jointVelMsg.mode = 2;
+        //jointVelMsg.velocity. = robot->mathVec2FloatVec(robot->dynamics->getVelocity());
         jointVelPub.publish(jointVelMsg);
     }
 

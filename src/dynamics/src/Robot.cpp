@@ -28,8 +28,8 @@
         this->J = rl::math::Matrix(6*numEE, numDof);
         this->M = rl::math::Matrix(numDof,numDof);
         for (int n=0;n<numEE;n++){
-            this->Ji.push_back(rl::math::Matrix(6, numDof/numEE));
-            this->invJi.push_back(rl::math::Matrix(6, numDof/numEE));
+            this->Ji.push_back(rl::math::Matrix(6, numDof));
+            this->invJi.push_back(rl::math::Matrix(6, numDof));
             this->xdi.push_back(rl::math::Vector(6));
         }
         this->tau0 = rl::math::Vector::Zero(numDof);
@@ -105,11 +105,16 @@
         int offseti = EE*6;
         int offsetj=EE*numDof/numEE;
         for (int i =0;i<6;i++){
-            for (int j=0;j<7;j++){
-                Ji(i,j) = J(i+offseti,j+offsetj);
+            for (int j=0;j<J.cols();j++){
+                Ji(i,j) = J(i+offseti,j);
             }
         }
-        this->dynamics->calculateJacobianInverse(Ji,invJi,0.01f,true);
+       // cout << J << endl;
+        this->dynamics->calculateJacobianInverse(Ji,invJi,0.001f);//,true);
+        //std::cout <<"JI= \n" << Ji << std::endl;
+        //std::cout <<"JInv= \n" << invJi << std::endl;
+        invJi.transposeInPlace();
+        //std::cout <<"JInv^T= \n" << invJi << std::endl;
         rl::math::Vector jd = invJi*xd;
         return jd;
     }

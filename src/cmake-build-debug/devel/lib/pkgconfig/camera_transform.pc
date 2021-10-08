@@ -1,0 +1,8 @@
+prefix=/home/paul/sawyerDemo/src/cmake-build-debug/devel
+
+Name: camera_transform
+Description: Description of camera_transform
+Version: 1.15.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

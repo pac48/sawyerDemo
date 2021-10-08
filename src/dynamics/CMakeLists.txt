@@ -9,6 +9,7 @@ find_package(RL REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         message_generation
+        intera_core_msgs
         )
 
 add_service_files(
@@ -20,6 +21,7 @@ add_service_files(
 generate_messages(
         DEPENDENCIES
         std_msgs
+        intera_core_msgs
 )
 
 
@@ -28,6 +30,7 @@ catkin_package(
         roscpp
         std_msgs
         message_runtime
+        intera_core_msgs
 )
 include_directories(
         ${catkin_INCLUDE_DIRS}

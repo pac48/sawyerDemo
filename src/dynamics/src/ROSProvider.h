@@ -40,20 +40,21 @@ public:
         }
         if (!topic2Pub<T>)
         {
-            topic2Pub<T> = new map<string, tuple<ros::Publisher, T *> *>();
+            topic2Pub<T> = new map<string, tuple<ros::Publisher, boost::function<T()> > >();
             atexit(ROSProvider::cleanPub<T>);
         }
         string key = channel+topic;
-        if (!topic2Pub<T>->operator[](key))
+        if (topic2Pub<T>->find(key) == topic2Pub<T>->end())
         {
             ros::Publisher pub = n->advertise<T>(topic, queue_size_pub);
-            auto msg = new T();
-            publisherPairs->push_back(new PublisherPair{pub, (void *)msg, ROSProvider::publishOne<T>});
-            auto tmp = new tuple<ros::Publisher , T *>{pub, msg};
+            auto msg = T();
+            publisherPairs->push_back(new PublisherPair{pub, (void *) &msg, ROSProvider::publishOne<T>});
+            boost::function<T()> msgGen = [=]() { return T();};
+            auto tmp = tuple<ros::Publisher , boost::function<T()> >{pub, msgGen};
             topic2Pub<T>->operator[](key) = tmp;
         }
-        auto [pub, msg_ptr] = *topic2Pub<T>->operator[](key);
-        tuple<ros::Publisher, T> tmp = make_tuple(pub, *msg_ptr);
+        auto [pub, msgGen] = topic2Pub<T>->operator[](key);
+        tuple<ros::Publisher, T> tmp = make_tuple(pub, msgGen());
         return tmp; //tuple<ros::Publisher, T *>{pub, msg_ptr}; //*topic2Pub<T>->operator[](topic);
     }
 
@@ -145,12 +146,12 @@ public:
         }
         if (topic2Pub<T>)
         {
-            for (auto it = topic2Pub<T>->begin(); it != topic2Pub<T>->end(); it++)
-            {
-                auto [pub_ptr, msg_ptr] = *it->second;
-                delete msg_ptr;
-                delete it->second; //tuple
-            }
+            //for (auto it = topic2Pub<T>->begin(); it != topic2Pub<T>->end(); it++)
+           // {
+             //   auto [pub_ptr, msg_ptr] = it->second;
+             //   delete msg_ptr;
+              //  delete it->second; //tuple
+            //}
 
             delete topic2Pub<T>;
             topic2Pub<T> = nullptr;
@@ -170,7 +171,7 @@ public:
     static inline map<string, ros::ServiceServer > *topic2Serv;
     static inline map<string, ros::Subscriber > *topic2Sub;
     template <typename T>
-    static inline map<string, tuple<ros::Publisher, T *> *> *topic2Pub;
+    static inline map<string, tuple<ros::Publisher, boost::function<T()>> > *topic2Pub;
 
 };
 #endif

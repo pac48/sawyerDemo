@@ -1,8 +1,0 @@
-prefix=/home/paul/sawyerDemo/src/cmake-build-debug/devel
-
-Name: camera_state_publisher
-Description: Description of camera_state_publisher
-Version: 1.15.1
-Cflags: -I/home/paul/sawyerDemo/src/camera_state_publisher/include -I/usr/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3 -I/usr/include
-Libs: -L${prefix}/lib -lcamera_state_publisher_solver -ljoint_state_listener2 -lorocos-kdl
-Requires: kdl_parser roscpp rosconsole rostime sensor_msgs tf2_ros tf2_kdl

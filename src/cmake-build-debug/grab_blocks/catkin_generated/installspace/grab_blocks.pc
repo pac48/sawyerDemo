@@ -1,8 +1,0 @@
-prefix=/usr/local
-
-Name: grab_blocks
-Description: Description of grab_blocks
-Version: 5.2.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: rospy sensor_msgs std_msgs intera_core_msgs visualization_msgs

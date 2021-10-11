@@ -12,6 +12,9 @@
     <param name="autorepeat_rate" value="30" />
 </node>
 
+<node pkg="gripper" type="gripper_listener.py" name="gripper_node" unless="$(arg use_simulation)"/>
+
+
 <include file="$(find sawyer_description)/launch/sawyer_description.launch" />
 
 

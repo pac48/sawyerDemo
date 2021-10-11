@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     ros::NodeHandle n;
     ROSProvider::init(&n);
     bool use_sim;
-    n.param<bool>("/use_sim", use_sim, true);
+    n.param<bool>("/sawyer_node/use_simulation", use_sim, true);
     auto sawyer = RobotFactory::getRobot<Sawyer>();
     // update joints
     auto [jointRvizPub, jointRvizMsg] = ROSProvider::getPublisher<sensor_msgs::JointState>("rviz/joint_states");

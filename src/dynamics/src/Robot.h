@@ -39,6 +39,8 @@ public:
 
     rl::mdl::Dynamic* dynamics;
     std::string name;
+    std::vector<std::string> jointNames;
+    std::map<std::string,int> jointNames2Ind;
 
     rl::math::Vector floatVec2MathVec(std::vector<float> fv);
 

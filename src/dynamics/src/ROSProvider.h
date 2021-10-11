@@ -24,10 +24,17 @@ public:
         queue_size_sub = 1;
     }
 
+    template<typename T>
+    static void setTimeStampNow(T &msg){
+        auto t = ros::Time::now();
+        msg.header.stamp.sec = t.sec;
+        msg.header.stamp.nsec = t.nsec;
+    }
+
     template <typename T>
     static auto getSubscriberCallBack(void (*userCallback)(T))
     {
-        boost::function<void(T msg)> callBack = [=](T msg) { userCallback(msg); };
+        boost::function<void(T)> callBack = [=](T msg) { userCallback(msg); };
         return callBack;
     }
 

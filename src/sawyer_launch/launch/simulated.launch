@@ -1,0 +1,18 @@
+<launch>
+<arg name="joy_stick" default="true" />
+<arg name="use_simulation" default="true" />
+
+<include file="$(find dynamics)/launch/sawyer.launch" >
+    <arg name="use_simulation" default="$(arg use_simulation)" />
+</include>
+
+<node pkg="controller" type="joy_controller.py" name="joy_controller_node" if="$(arg joy_stick)" />
+
+<node pkg="joy" name="joystick" type="joy_node" if="$(arg joy_stick)">
+    <param name="autorepeat_rate" value="30" />
+</node>
+
+<include file="$(find sawyer_description)/launch/sawyer_description.launch" />
+
+
+</launch>

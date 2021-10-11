@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="use_simulation" default="true"/>
+
+    <node pkg="dynamics" type="sawyer_node" name="sawyer_node" output="screen" >
+        <param name="use_simulation" value="$(arg use_simulation)" />
+    </node>
+
+</launch>

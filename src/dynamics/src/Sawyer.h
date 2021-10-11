@@ -11,28 +11,15 @@ class Sawyer : public Robot
 {
     
 public:
-    std::vector<int> joint2RL = {1, 8, 9, 0, 2, 3, 4, 5, 6, 7}; // maps joint sensor to robot library
-    std::vector<int> RL2Joint = {3, 0, 4, 5, 6, 7, 8, 9, 2, 1};
-            std::vector<std::string> jointNames = {
-            "head_pan",
-            "right_gripper_l_finger_joint",
-            "right_gripper_r_finger_joint",
-            "right_j0",
-            "right_j1",
-            "right_j2",
-            "right_j3",
-            "right_j4",
-            "right_j5",
-            "right_j6"};
 
     Sawyer() : Robot("Sawyer")
     {
         // initialize a reasonable default
         auto q = this->dynamics->getPosition();
         q[0] = (0/ 180.0) * 3.14;
-        q[1] = (0/ 180.0) * 3.14;
+        q[1] = (-45/ 180.0) * 3.14;
         q[2] = (0 / 180.0) * 3.14;
-        q[3] = (0/ 180.0) * 3.14;
+        q[3] = (90/ 180.0) * 3.14;
         q[4] = (0/ 180.0) * 3.14;
         q[5] = (0/ 180.0) * 3.14;
         q[6] = (0 / 180.0) * 3.14;
@@ -45,10 +32,25 @@ public:
         auto q = robot->dynamics->getPosition();
         for (int i = 0; i < msg->position.size(); i++)
         {
-            q[robot->joint2RL[i]] = msg->position[i];
+            int ind = robot->jointNames2Ind[msg->name[i]];
+            q[ind] = msg->position[i];
         }
         robot->dynamics->setPosition(q);
         robot->dynamics->forwardPosition();
+        updateOperationalPos(msg);
+    }
+
+    static void updateVelJoints(const intera_core_msgs::JointCommand::ConstPtr &msg)
+    { // set joints to new config from message
+        Sawyer* robot = RobotFactory::getRobot<Sawyer>();
+        auto qd = robot->dynamics->getVelocity();
+        for (int i = 0; i < msg->velocity.size(); i++)
+        {
+            int ind = robot->jointNames2Ind[msg->names[i]];
+            qd[ind] = msg->velocity[i];
+        }
+        robot->dynamics->setVelocity(qd);
+       // robot->dynamics->forwardVelocity();
     }
 
     static void updateOperationalPos(const sensor_msgs::JointState::ConstPtr &msg)
@@ -58,23 +60,23 @@ public:
         auto q = robot->dynamics->getPosition();
         for (int i = 0; i < msg->position.size(); i++)
         {
-            q[robot->joint2RL[i]] = msg->position[i];
+           int ind = robot->jointNames2Ind[msg->name[i]];
+            q[ind] = msg->position[i];
         }
-        auto tmp = robot->dynamics->getPosition();
-
         robot->dynamics->setPosition(q);
         robot->dynamics->forwardPosition();
         operationalPosPubMsg.data = robot->getOperationalPosition(9); // still need to check 2 and 1;
         operationalPosPub.publish(operationalPosPubMsg);
-
     }
 
 
     static void rvizUpdateJoints(const sensor_msgs::JointState::ConstPtr &msg)
     { //maybe broken
-        auto [jointRvizPub, jointRvizMsg] = ROSProvider::getPublisher<sensor_msgs::JointState>("/joint_states");
-        msg->header.stamp.setNow(ros::Time::now());
-        jointRvizPub.publish(msg);
+        auto [jointRvizPub, jointRvizMsg] = ROSProvider::getPublisher<sensor_msgs::JointState>("rviz/joint_states");
+        jointRvizMsg.position = msg->position;
+        jointRvizMsg.name = msg->name;
+        ROSProvider::setTimeStampNow(jointRvizMsg);
+        jointRvizPub.publish(jointRvizMsg);
     }
 
     static void sendOpJointVelocities(const std_msgs::Float32MultiArray::ConstPtr &opVelMsg)
@@ -82,21 +84,21 @@ public:
         auto [jointVelPub, jointVelMsg] = ROSProvider::getPublisher<intera_core_msgs::JointCommand>("/robot/limb/right/joint_command");
         Sawyer* robot = RobotFactory::getRobot<Sawyer>();
         std::vector<float> opvel;
-        for (int i = 0; i < 6; i++)
-        {
+        for (int i=0; i < opVelMsg->data.size(); i++)
             opvel.push_back(opVelMsg->data[i]);
-        }
         //robot->dynamics->inverseDynamics();
         auto qd = robot->xd2jd(9, robot->floatVec2MathVec(opvel));
-        for (int i = 0; i < robot->RL2Joint.size(); i++)
+        for (int i = 0; i < qd.size(); i++)
         {
-            if (robot->RL2Joint[i] < 3)
+            string name = robot->jointNames[i];
+            if (name== "head_pan" || name == "right_gripper_l_finger_joint" || name == "right_gripper_r_finger_joint")
                 continue;
-            jointVelMsg.velocity.push_back(qd[robot->RL2Joint[i]]);
-            jointVelMsg.names.push_back(robot->jointNames[robot->RL2Joint[i]]);
+            jointVelMsg.velocity.push_back(qd[i]);
+            jointVelMsg.names.push_back(name);
         }
         jointVelMsg.mode = 2;
         //jointVelMsg.velocity. = robot->mathVec2FloatVec(robot->dynamics->getVelocity());
+        ROSProvider::setTimeStampNow(jointVelMsg);
         jointVelPub.publish(jointVelMsg);
     }
 

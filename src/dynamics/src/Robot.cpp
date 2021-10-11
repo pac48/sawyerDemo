@@ -23,6 +23,12 @@
         this->model = new mdl::Model();
         this->loadModel(urdf_file_name);
         this->dynamics = (mdl::Dynamic*) this->model;
+        for (int i = 0; i < this->model->getJoints(); i++){
+            auto joint = this->model->getJoint(i);
+            string name = joint->getName();
+            jointNames.push_back(name);
+            jointNames2Ind[name] = i;
+        }
         int numEE = this->dynamics->getOperationalDof();
         int numDof = this->dynamics->getDof();
         this->J = rl::math::Matrix(6*numEE, numDof);
@@ -103,18 +109,13 @@
         int numEE = this->dynamics->getOperationalDof();
         int numDof = this->dynamics->getDof();
         int offseti = EE*6;
-        int offsetj=EE*numDof/numEE;
         for (int i =0;i<6;i++){
             for (int j=0;j<J.cols();j++){
                 Ji(i,j) = J(i+offseti,j);
             }
         }
-       // cout << J << endl;
-        this->dynamics->calculateJacobianInverse(Ji,invJi,0.001f);//,true);
-        //std::cout <<"JI= \n" << Ji << std::endl;
-        //std::cout <<"JInv= \n" << invJi << std::endl;
         invJi.transposeInPlace();
-        //std::cout <<"JInv^T= \n" << invJi << std::endl;
+       this->dynamics->calculateJacobianInverse(Ji,invJi,0.01f, true);
         rl::math::Vector jd = invJi*xd;
         return jd;
     }

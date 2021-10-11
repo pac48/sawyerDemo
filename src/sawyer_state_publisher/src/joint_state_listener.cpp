@@ -79,7 +79,7 @@ JointStateListener::JointStateListener(const std::shared_ptr<RobotStatePublisher
   ros::TransportHints transport_hints;
   transport_hints.tcpNoDelay(true);
   // subscribe to joint state
-  joint_state_sub_ = n.subscribe("robot/joint_states", 1, &JointStateListener::callbackJointState, this, transport_hints);
+  joint_state_sub_ = n.subscribe("rviz/joint_states", 1, &JointStateListener::callbackJointState, this, transport_hints);
 
   // trigger to publish fixed joints
   // if using static transform broadcaster, this will be a oneshot trigger and only run once
@@ -136,6 +136,8 @@ void JointStateListener::callbackJointState(const JointStateConstPtr& state)
   //       then last_published is zero.
 
   // check if we need to publish
+
+ignore_timestamp_ = true;
   if (ignore_timestamp_ || state->header.stamp >= last_published + publish_interval_) {
     // get joint positions from state message
     std::map<std::string, double> joint_positions;

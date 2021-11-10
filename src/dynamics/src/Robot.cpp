@@ -115,7 +115,7 @@
             }
         }
         invJi.transposeInPlace();
-       this->dynamics->calculateJacobianInverse(Ji,invJi,0.01f, true);
+       this->dynamics->calculateJacobianInverse(Ji,invJi,0.1f, true);
         rl::math::Vector jd = invJi*xd;
         return jd;
     }

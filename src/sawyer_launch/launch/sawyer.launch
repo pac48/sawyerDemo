@@ -1,6 +1,6 @@
 <launch>
 <arg name="joy_stick" default="true" />
-<arg name="use_simulation" default="true" />
+<arg name="use_simulation" default="false" />
 
 <include file="$(find dynamics)/launch/sawyer.launch" >
     <arg name="use_simulation" default="$(arg use_simulation)" />

@@ -7,9 +7,6 @@
 [submodule "src/intera_sdk"]
 	path = src/intera_sdk
 	url = https://github.com/RethinkRobotics/intera_sdk.git
-[submodule "src/sawyer_robot"]
-	path = src/sawyer_robot
-	url = https://github.com/RethinkRobotics/sawyer_robot.git
 [submodule "src/moveit_visual_tools"]
 	path = src/moveit_visual_tools
 	url = https://github.com/ros-planning/moveit_visual_tools.git

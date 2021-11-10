@@ -32,6 +32,7 @@ public:
         auto q = robot->dynamics->getPosition();
         for (int i = 0; i < msg->position.size(); i++)
         {
+	    if (robot->jointNames2Ind.find(msg->name[i]) == robot->jointNames2Ind.end()) continue;
             int ind = robot->jointNames2Ind[msg->name[i]];
             q[ind] = msg->position[i];
         }
@@ -46,6 +47,7 @@ public:
         auto qd = robot->dynamics->getVelocity();
         for (int i = 0; i < msg->velocity.size(); i++)
         {
+            if (robot->jointNames2Ind.find(msg->names[i]) == robot->jointNames2Ind.end()) continue;
             int ind = robot->jointNames2Ind[msg->names[i]];
             qd[ind] = msg->velocity[i];
         }
@@ -60,6 +62,7 @@ public:
         auto q = robot->dynamics->getPosition();
         for (int i = 0; i < msg->position.size(); i++)
         {
+           if (robot->jointNames2Ind.find(msg->name[i]) == robot->jointNames2Ind.end()) continue;
            int ind = robot->jointNames2Ind[msg->name[i]];
             q[ind] = msg->position[i];
         }

@@ -20,13 +20,13 @@ cartesian = True
 cartisian = True
 
 toggle_helper = dict()
-speed_scale = {cartisian: .2*1.0, not cartisian: .2*2.0}
+speed_scale = {cartisian: .2, not cartisian: .4}
 map1 = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5} # joy to velocity mapping
 map2 = {0:4, 1:3, 2:5, 3:0, 4:1, 5:2} # joy to angular velocity mapping
 x_sign = {cartisian: 1, not cartisian: 1.0}
 y_sign = {cartisian: 1, not cartisian: -1.0}
 z_sign = {cartisian: 1, not cartisian: 1.0}
-toggleBottons = [0, 1]
+toggleBottons = [0, 3]
 thresh = rospy.Duration(0, int(5E8))
 
 def callback(msg):
@@ -34,17 +34,19 @@ def callback(msg):
     global offset
     global cartisian
 
-    xd = -1*1*msg.axes[1]*speed_scale[cartisian]*x_sign[cartisian]
-    yd = -1*1*msg.axes[0]*speed_scale[cartisian]*y_sign[cartisian]
+    xd = -1*msg.axes[1]*speed_scale[cartisian]*x_sign[cartisian]
+    yd = -1*msg.axes[0]*speed_scale[cartisian]*y_sign[cartisian]
     zd = 0
-    if (msg.buttons[5] == 1):
-        zd = .3*speed_scale[cartisian]*z_sign[cartisian]
-    if (msg.buttons[6] == 1):
-        zd = -.3*speed_scale[cartisian]*z_sign[cartisian]
+    if (msg.buttons[2] == 1):
+        zd = speed_scale[cartisian]*z_sign[cartisian]
+    if (msg.buttons[1] == 1):
+        zd = -speed_scale[cartisian]*z_sign[cartisian]
     if cartisian:
         map = map1
+        zd *= .3
     else:
         map = map2
+        zd *= .5
     command = Float32MultiArray()
     command.data = [0 for _ in range(6)]
     command.data[map[0]] = xd
@@ -60,7 +62,7 @@ def callback(msg):
                 msgB = Bool()
                 msgB.data = grip_state
                 pub_gripper.publish(msgB)
-            elif (b==1):
+            elif (b==3):
                 cartisian = not cartisian
 
 if __name__ == '__main__':

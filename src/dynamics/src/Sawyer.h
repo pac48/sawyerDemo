@@ -75,11 +75,12 @@ public:
 
     static void rvizUpdateJoints(const sensor_msgs::JointState::ConstPtr &msg)
     { //maybe broken
-        auto [jointRvizPub, jointRvizMsg] = ROSProvider::getPublisher<sensor_msgs::JointState>("rviz/joint_states");
-        jointRvizMsg.position = msg->position;
-        jointRvizMsg.name = msg->name;
-        ROSProvider::setTimeStampNow(jointRvizMsg);
-        jointRvizPub.publish(jointRvizMsg);
+        //auto [jointRvizPub, jointRvizMsg] = ROSProvider::getPublisher<sensor_msgs::JointState>("rviz/joint_states");
+        //jointRvizMsg.position = msg->position;
+        //jointRvizMsg.name = msg->name;	
+	//jointRvizMsg.header.stamp =  msg->header.stamp;
+        //ROSProvider::setTimeStampNow(jointRvizMsg);
+        //jointRvizPub.publish(jointRvizMsg);
     }
 
     static void sendOpJointVelocities(const std_msgs::Float32MultiArray::ConstPtr &opVelMsg)

@@ -12,6 +12,8 @@
     <param name="autorepeat_rate" value="30" />
 </node>
 
+<node pkg="intera_examples" type="gripper_keyboard.py" name="gripper_sdk" unless="$(arg use_simulation)"/>
+
 <node pkg="gripper" type="gripper_listener.py" name="gripper_node" unless="$(arg use_simulation)"/>
 
 

@@ -31,14 +31,21 @@ MOVE_TO_BLOCK = 2
 MOVE_ABOVE_BIN = 3
 MOVE_TO_BIN = 4
 state = HOME
-
+global execute
 from math import pi
 from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
 
 
+def callback_execute(msg):
+    global execute
+    execute = msg
+
 def callback_red_marker(msg):
     global state
+    global execute
+    if not execute.data:
+        return
     pose_goal = Pose()
     pose_goal.orientation.w = 0.0
     pose_goal.orientation.y = 1.0
@@ -51,7 +58,7 @@ def callback_red_marker(msg):
             if state == MOVE_ABOVE_BLOCK:
                 pose_goal.position.z = pose_goal.position.z + .35
             elif state == MOVE_TO_BLOCK:
-                pose_goal.position.z = pose_goal.position.z
+                pose_goal.position.z = pose_goal.position.z+.02
             plan = move_to_goal(pose_goal)
             if plan:
                 if state == MOVE_TO_BLOCK:
@@ -73,6 +80,7 @@ def callback_red_marker(msg):
         if plan:
             if state == MOVE_TO_BIN:
                 gripper_pub.publish(Bool(data=True))
+                execute.data = False
             else:
                 gripper_pub.publish(Bool(data=False))
             time.sleep(1)
@@ -119,6 +127,7 @@ if __name__ == '__main__':
                     anonymous=True)
     scene_pub = rospy.Publisher("/planning_scene", PlanningScene, queue_size=1)
     gripper_pub = rospy.Publisher("/gripper_command", Bool, queue_size=1)
+    execute_sub = rospy.Subscriber("/execute", Bool, callback_execute)
     rospy.sleep(1)
 
     robot = moveit_commander.RobotCommander()
@@ -147,7 +156,7 @@ if __name__ == '__main__':
     color=["/rviz_red_markers", "/rviz_green_markers" , "/rviz_blue_markers"]
     # ind=randint(0,2)
     ind = 1
-    cor=color[ind]
+    cor = color[ind]
     print(cor)
     rospy.Subscriber(cor, Marker, callback_red_marker, queue_size=1)
     state = MOVE_ABOVE_BLOCK

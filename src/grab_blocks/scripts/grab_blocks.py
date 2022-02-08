@@ -49,7 +49,7 @@ def callback_red_marker(msg):
         pose_goal.position.z -= 0
         if pose_goal.position.x > 0:
             if state == MOVE_ABOVE_BLOCK:
-                pose_goal.position.z = pose_goal.position.z + .2
+                pose_goal.position.z = pose_goal.position.z + .35
             elif state == MOVE_TO_BLOCK:
                 pose_goal.position.z = pose_goal.position.z
             plan = move_to_goal(pose_goal)
@@ -63,12 +63,12 @@ def callback_red_marker(msg):
 
     elif state == MOVE_TO_BIN or  state == MOVE_ABOVE_BIN:
         pose_goal.position.x = .4
-        pose_goal.position.y = -.2
         if state==MOVE_ABOVE_BIN:
-            pose_goal.position.z = .5
-            pose_goal.position.y = .0
+            pose_goal.position.z = .2
+            pose_goal.position.y = -.3
         elif state==MOVE_TO_BIN:
-            pose_goal.position.z = .35
+            pose_goal.position.y = -.3
+            pose_goal.position.z = .05
         plan = move_to_goal(pose_goal)
         if plan:
             if state == MOVE_TO_BIN:
@@ -117,18 +117,18 @@ if __name__ == '__main__':
     moveit_commander.roscpp_initialize(sys.argv)
     rospy.init_node('move_group_python_interface_tutorial',
                     anonymous=True)
-    scene_pub = rospy.Publisher("/planning_scene", PlanningScene, queue_size=3)
-    gripper_pub = rospy.Publisher("/gripper_command", Bool, queue_size=3)
+    scene_pub = rospy.Publisher("/planning_scene", PlanningScene, queue_size=1)
+    gripper_pub = rospy.Publisher("/gripper_command", Bool, queue_size=1)
     rospy.sleep(1)
 
     robot = moveit_commander.RobotCommander()
     scene = moveit_commander.PlanningSceneInterface()
-    add_box([.5,.15, -.4], [.55, 1.1, 1.1], "box1")
-    add_box([.3, .15, -.2], [.05, 1.1, 1.1], "box2")
+    add_box([.5,.15, -.4], [.55, 1.1, .8], "box1")
+    # add_box([.3, .15, -.2], [.05, 1.1, .9], "box2")
     #rospy.sleep(1)
 
     listener = tf.TransformListener()
-    listener.waitForTransform("/base", "/camera_color_optical_frame", rospy.Time(0), rospy.Duration(4.0))
+    listener.waitForTransform("/base", "/zed_left_camera_optical_frame", rospy.Time(0), rospy.Duration(4.0))
 
 
 
@@ -145,10 +145,11 @@ if __name__ == '__main__':
     group_name = "right_arm"
     group = moveit_commander.MoveGroupCommander(group_name)
     color=["/rviz_red_markers", "/rviz_green_markers" , "/rviz_blue_markers"]
-    ind=randint(0,2)
+    # ind=randint(0,2)
+    ind = 1
     cor=color[ind]
     print(cor)
-    rospy.Subscriber(cor, Marker, callback_red_marker)
+    rospy.Subscriber(cor, Marker, callback_red_marker, queue_size=1)
     state = MOVE_ABOVE_BLOCK
     rospy.spin()
 

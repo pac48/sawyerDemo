@@ -1,18 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
 
-<node pkg="intera_interface" type="enable_robot.py" name="enable_robot_node" args="-e"/>
+<!-- <node pkg="intera_interface" type="enable_robot.py" name="enable_robot_node" args="-e"/> -->
+
+<include file="$(find sawyer_launch)/launch/sawyer.launch">
+<!--   all vars that included.launch requires must be set -->
+  <arg name="joy_stick" value="false" />
+</include>
+
+
+<include file="$(find zed_nodelet_example)/launch/zed_laserscan_nodelet.launch">
+</include>
+
+<!--     <arg name="svo_file"             default="" />  --><!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
+<!--     <arg name="stream"               default="" />  --><!-- <arg name="stream" default="<ip_address>:<port>"> -->
+
+<!--     <arg name="camera_model"         default="zed" /> -->
+
+<!--      --><!-- Launch ZED camera wrapper -->
+<!--     <include file="$(find zed_wrapper)/launch/$(arg camera_model).launch"> -->
+<!--         <arg name="camera_model"        value="$(arg camera_model)" /> -->
+<!--         <arg name="svo_file"            value="$(arg svo_file)" /> -->
+<!--         <arg name="stream"              value="$(arg stream)" /> -->
+<!--     </include> -->
+
 
  <node pkg="intera_interface" type="joint_trajectory_action_server.py" name="joint_trajectory_action_server_node"/>
 
 
 <include file="$(find sawyer_moveit_config)/launch/sawyer_moveit.launch">
-  <!-- all vars that included.launch requires must be set -->
+<!--   all vars that included.launch requires must be set -->
   <arg name="electric_gripper" value="true" />
 </include>
 
-<node pkg="intera_examples" type="gripper_listener.py" name="gripper_listener" />
+<node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1.13 -.0025 0.48 -.2164 0 .9763 0 world base_link 500" />
 
-<!-- <node pkg="grab_blocks" type="grab_blocks.py" name="grab_blocks_node" />  -->
+<!-- <node pkg="intera_examples" type="gripper_listener.py" name="gripper_listener" /> -->
 
+<node pkg="color_detector" type="color_detector.py" name="color_detect_node" /> -->
+
+<node pkg="grab_blocks" type="grab_blocks.py" name="grab_blocks_node" />
 </launch>
+

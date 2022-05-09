@@ -12,26 +12,32 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files( DIRECTORY msg
         FILES
-        AnalogIOState.msg
-        AnalogIOStates.msg
-        AnalogOutputCommand.msg
-        RobotAssemblyState.msg
-        CameraControl.msg
-        CameraSettings.msg
+        NavigatorStates.msg
+        SEAJointState.msg
         CollisionAvoidanceState.msg
-        CollisionDetectionState.msg
-        DigitalIOState.msg
-        DigitalIOStates.msg
-        DigitalOutputCommand.msg
+        NavigatorStates.msg
+        HeadState.msg
+        AnalogIOStates.msg
+        CameraControl.msg
+        AnalogOutputCommand.msg
         EndpointNamesArray.msg
         EndpointState.msg
-        EndpointStates.msg
+        DigitalIOStates.msg
         HeadPanCommand.msg
-        HeadState.msg
+        AnalogIOState.msg
+        DigitalOutputCommand.msg
+        AssemblyStates.msg
+        CameraSettings.msg
+        AssemblyState.msg
+        NavigatorState.msg
+        JointCommand.msg
+        JointLimits.msg
+        NavigatorState.msg
+        EndpointStates.msg
+        DigitalIOState.msg
+        CollisionDetectionState.msg
         HomingCommand.msg
         HomingState.msg
-        InteractionControlCommand.msg
-        InteractionControlState.msg
         IOComponentCommand.msg
         IOComponentConfiguration.msg
         IOComponentStatus.msg
@@ -39,21 +45,18 @@ add_message_files( DIRECTORY msg
         IODeviceConfiguration.msg
         IODeviceStatus.msg
         IONodeConfiguration.msg
-        IONodeStatus.msg
         IOStatus.msg
-        JointCommand.msg
-        JointLimits.msg
-        NavigatorState.msg
-        NavigatorStates.msg
-        SEAJointState.msg
+        IONodeStatus.msg
         URDFConfiguration.msg
+        InteractionControlCommand.msg
+        InteractionControlState.msg
 )
 
 add_service_files( DIRECTORY srv
         FILES
-        IOComponentCommandSrv.srv
-        SolvePositionFK.srv
         SolvePositionIK.srv
+        SolvePositionFK.srv
+        IOComponentCommandSrv.srv
 )
 
 add_action_files(DIRECTORY action FILES CalibrationCommand.action)

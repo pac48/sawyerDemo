@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+<arg name="filename" default="trajectory"/>
+<arg name="ws_dir" default="/home/paul/sawyerDemo"/> 
+
+<node
+pkg="intera_examples"
+type="joint_recorder.py"
+name="joint_recorder"
+args="-f $(arg ws_dir)/src/joint_playback/$(arg filename)"
+output="screen"/>
+
+</launch>

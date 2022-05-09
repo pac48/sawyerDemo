@@ -21,8 +21,10 @@ import math
 import operator
 import numpy as np
 
-import bezier
-import minjerk
+#import bezier
+from .bezier import *
+#import minjerk
+from .minjerk import *
 
 import rospy
 
@@ -169,20 +171,22 @@ class JointTrajectoryActionServer(object):
 
     def _get_current_error(self, joint_names, set_point):
         current = self._get_current_position(joint_names)
-        error = map(operator.sub, set_point, current)
+        error = list(map(operator.sub, set_point, current))
         return zip(joint_names, error)
 
     def _update_feedback(self, cmd_point, jnt_names, cur_time):
-        self._fdbk.header.stamp = rospy.Duration.from_sec(rospy.get_time())
+        #self._fdbk.header.stamp = rospy.Duration.from_sec(rospy.get_time()).to_msg()
+        self._fdbk.header.stamp = rospy.get_rostime()
         self._fdbk.joint_names = jnt_names
         self._fdbk.desired = cmd_point
         self._fdbk.desired.time_from_start = rospy.Duration.from_sec(cur_time)
         self._fdbk.actual.positions = self._get_current_position(jnt_names)
         self._fdbk.actual.time_from_start = rospy.Duration.from_sec(cur_time)
-        self._fdbk.error.positions = map(operator.sub,
+        self._fdbk.error.positions = list(map(operator.sub,
                                          self._fdbk.desired.positions,
                                          self._fdbk.actual.positions
-                                        )
+                                        ))
+        #print(self._fdbk.error.positions)                            
         self._fdbk.error.time_from_start = rospy.Duration.from_sec(cur_time)
         self._server.publish_feedback(self._fdbk)
 
@@ -275,7 +279,7 @@ class JointTrajectoryActionServer(object):
         num_traj_dim = sum(dimensions_dict.values())
         num_b_values = len(['b0', 'b1', 'b2', 'b3'])
         b_matrix = np.zeros(shape=(num_joints, num_traj_dim, num_traj_pts-1, num_b_values))
-        for jnt in xrange(num_joints):
+        for jnt in range(num_joints):
             traj_array = np.zeros(shape=(len(trajectory_points), num_traj_dim))
             for idx, point in enumerate(trajectory_points):
                 current_point = list()
@@ -299,7 +303,7 @@ class JointTrajectoryActionServer(object):
         if dimensions_dict['accelerations']:
             pnt.accelerations = [0.0] * num_joints
         for jnt in range(num_joints):
-            m_point = minjerk.minjerk_point(m_matrix[jnt, :, :, :], idx, t)
+            m_point = minjerk_point(m_matrix[jnt, :, :, :], idx, t)
             # Positions at specified time
             pnt.positions[jnt] = m_point[0]
             # Velocities at specified time
@@ -317,7 +321,7 @@ class JointTrajectoryActionServer(object):
         num_traj_dim = sum(dimensions_dict.values())
         num_m_values = len(['a0', 'a1', 'a2', 'a3', 'a4', 'a5', 'tm'])
         m_matrix = np.zeros(shape=(num_joints, num_traj_dim, num_traj_pts-1, num_m_values))
-        for jnt in xrange(num_joints):
+        for jnt in range(num_joints):
             traj_array = np.zeros(shape=(len(trajectory_points), num_traj_dim))
             for idx, point in enumerate(trajectory_points):
                 current_point = list()
@@ -327,7 +331,7 @@ class JointTrajectoryActionServer(object):
                 if dimensions_dict['accelerations']:
                     current_point.append(point.accelerations[jnt])
                 traj_array[idx, :] = current_point
-            m_matrix[jnt, :, :, :] = minjerk.minjerk_coefficients(traj_array, point_duration)
+            m_matrix[jnt, :, :, :] = minjerk_coefficients(traj_array, point_duration)
         return m_matrix
 
     def _determine_dimensions(self, trajectory_points):

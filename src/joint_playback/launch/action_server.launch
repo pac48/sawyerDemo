@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+<node
+pkg="intera_interface"
+type="joint_trajectory_action_server.py"
+name="joint_trajectory_action_server"
+args="-m velocity"
+output="screen"/>
+
+</launch>

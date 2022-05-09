@@ -5,8 +5,8 @@
 
 <node
 pkg="intera_examples"
-type="joint_position_file_playback.py"
-name="joint_position_file_playback"
+type="joint_trajectory_file_playback.py"
+name="joint_trajectory_file_playback"
 args="-f $(arg ws_dir)/src/joint_playback/$(arg filename)"
 output="screen"/>
 

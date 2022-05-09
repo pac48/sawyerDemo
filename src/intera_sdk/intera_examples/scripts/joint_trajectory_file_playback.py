@@ -19,7 +19,9 @@ SDK Joint Trajectory Example: file playback
 """
 
 import argparse
+#from operator import sub,abs,div
 import operator
+
 import sys
 import threading
 
@@ -69,6 +71,7 @@ class Trajectory(object):
 
         self.limb = limb
         self.gripper_name = '_'.join([limb, 'gripper'])
+        self.gripper = False
         #gripper interface - for gripper command playback
         try:
             self.gripper = intera_interface.Gripper(self.gripper_name)
@@ -192,7 +195,7 @@ class Trajectory(object):
             diffs = map(operator.sub, cmd, cur)
             diffs = map(operator.abs, diffs)
             #determine the largest time offset necessary across all joints
-            offset = max(map(operator.div, diffs, dflt_vel))
+            offset = max(map(operator.truediv, diffs, dflt_vel))
             return offset
 
         for idx, values in enumerate(lines[1:]):
@@ -246,8 +249,8 @@ class Trajectory(object):
         # Syncronize playback by waiting for the trajectories to start
         while not rospy.is_shutdown() and not self._get_trajectory_flag():
             rospy.sleep(0.05)
-        if self.gripper:
-            self._execute_gripper_commands()
+        #if self.gripper:
+        #    self._execute_gripper_commands()
 
     def stop(self):
         """

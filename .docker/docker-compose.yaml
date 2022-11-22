@@ -7,7 +7,7 @@ services:
         network_mode: host
         #ipc: host
         environment:
-            - ROS_IP=192.168.1.13
+            - ROS_IP=192.168.1.10
         tty: true
 
         devices:

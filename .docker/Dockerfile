@@ -1,15 +1,15 @@
-FROM osrf/ros:humble-desktop
+FROM osrf/ros:noetic-desktop-full
 
 SHELL ["/bin/bash", "-c"]
 
 # clone source
-ENV ROS_WS /home/smart_home_ws
+ENV ROS_WS /home/sawyer_ws
 RUN mkdir -p $ROS_WS/src
 WORKDIR $ROS_WS/src
-RUN git clone https://github.com/AssistiveRoboticsUNH/smart-home.git
-WORKDIR smart-home
-RUN git checkout ros2
-RUN vcs import < external.repos.yaml
+RUN git clone git@github.com:pac48/sawyerDemo.git
+#WORKDIR sawyerDemo
+#RUN git checkout main
+#RUN vcs import < external.repos.yaml
 WORKDIR $ROS_WS
 
 # get dependencies
@@ -18,9 +18,9 @@ RUN rosdep update
 RUN rosdep install --from-paths src --ignore-src -y
 
 RUN cd ${ROS_WS} \
-    && . /opt/ros/humble/setup.sh \
-    && colcon build \
-    && source ${ROS_WS}/install/setup.bash
+    && . /opt/ros/noetic/setup.sh \
+    && catkin_make \
+    && source ${ROS_WS}/devel/setup.bash
 
 # copy entry pointer script
 RUN apt install net-tools -y

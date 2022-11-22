@@ -1,13 +1,14 @@
 version: '2'
 
 services:
-    ros_noetic:
-        image: "osrf/ros:noetic-desktop-full"
+    sawyer_demo:
+        image: "sawyer_demo:latest"
         privileged: true
         network_mode: host
         #ipc: host
         environment:
             - ROS_IP=192.168.1.10
+            - ROS_MASTER_URI=http://192.168.1.10:11311
         tty: true
 
         devices:

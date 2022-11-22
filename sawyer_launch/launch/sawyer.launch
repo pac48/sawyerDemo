@@ -17,7 +17,7 @@
 <node pkg="gripper" type="gripper_listener.py" name="gripper_node" unless="$(arg use_simulation)"/>
 
 
-<include file="$(find sawyer_description)/launch/sawyer_description.launch" />
+<include file="$(find custom_sawyer_description)/launch/sawyer_description.launch" />
 
 
 </launch>

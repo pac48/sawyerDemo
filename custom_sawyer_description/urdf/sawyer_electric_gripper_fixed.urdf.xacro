@@ -8,7 +8,7 @@
     <xacro:property name="gazebo_tag" value="false" scope="local"/>
   </xacro:unless>
 
-  <xacro:include filename="$(find sawyer_description)/urdf/rethink_electric_gripper_fixed.xacro" />
+  <xacro:include filename="$(find custom_sawyer_description)/urdf/rethink_electric_gripper_fixed.xacro" />
   <xacro:rethink_electric_gripper_fixed side="right"
                                   gazebo="${gazebo_tag}"
                                   use_connector_plate="true"

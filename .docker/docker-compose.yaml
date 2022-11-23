@@ -1,19 +1,16 @@
-version: '2'
+version: '3'
 
 services:
     sawyer_demo:
-        image: "sawyer_demo:latest"
         privileged: true
+        image: "pac48/sawyer_demo:latest"
         network_mode: host
-        #ipc: host
         environment:
-            - ROS_IP=127.0.0.1
             - ROS_MASTER_URI=http://192.168.1.10:11311
-        tty: true
-
+            - ROS_IP=192.168.1.38
         devices:
-            - /dev/ttyUSB0:/dev/ttyUSB0
             - /dev/input/js0:/dev/input/js0
         volumes:
             - /tmp/.X11-unix/:/tmp/.X11-unix/
-       
+        tty: true
+           

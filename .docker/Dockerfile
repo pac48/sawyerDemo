@@ -9,7 +9,6 @@ RUN apt-add-repository ppa:roblib/ppa
 RUN apt update
 RUN apt-get install librl-dev -y
 
-
 # clone source
 RUN apt install git -y
 ENV ROS_WS /home/sawyer_ws
@@ -36,6 +35,8 @@ RUN apt install net-tools -y
 RUN apt install tmux -y
 RUN apt-get install iputils-ping -y
 RUN adduser root dialout
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 COPY ros_entrypoint.sh /
 ENTRYPOINT ["/ros_entrypoint.sh"]
 

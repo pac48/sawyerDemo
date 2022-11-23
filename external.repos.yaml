@@ -2,11 +2,11 @@ repositories:
   external/intera_common:
     type: git
     url: https://github.com/RethinkRobotics/intera_common.git
-    version: release-5.2.0
+    version: master
   external/intera_sdk:
     type: git
-    url: https://github.com/pac48/intera_sdk.git
-    version: release-5.2.0
+    url: https://github.com/RethinkRobotics/intera_sdk.git
+    version: master
   external/realsense-ros:
     type: git
     url: https://github.com/IntelRealSense/realsense-ros.git
@@ -14,11 +14,11 @@ repositories:
   external/sawyer_robot:
     type: git
     url: https://github.com/RethinkRobotics/sawyer_robot.git
-    version: release-5.2.0
+    version: master
   external/sawyer_moveit:
     type: git
     url: https://github.com/RethinkRobotics/sawyer_moveit.git
-    version: release-5.2.0
+    version: master
   external/joystick_drivers:
     type: git
     url: https://github.com/ros-drivers/joystick_drivers.git
